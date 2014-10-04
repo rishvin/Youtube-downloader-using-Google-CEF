@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Youtube Downloader</title>
+
+<style type="text/css">
+  
+#form1 {
+  background-color: #FAFAFA;
+  border: 0px #000000 solid;
+}
+  
+#url, #get, #download, #list, #table, p, button {
+   border: 1px #A9A9A9 solid;
+   background-color: #F0F0F0;
+   font-family: 'Lucida Console';
+   font-style: italic;
+
+}
+
+#url {
+  font-size: 20px;
+  color :#696969;
+}
+
+p{
+  font-size: 15px;
+}
+
+#get, #download, button {
+  color: #000000;
+  font-size: 15px;
+}
+
+#list {
+  font-size: 20px;
+}
+
+#table td
+{
+   padding: 0px 0px 0px 0px;
+}
+#table td div
+{
+   white-space: nowrap;
+}
+
+
+
+</style>
+</head>
+<body>
+
+<div id="form1" style="position:absolute;left:18px;top:47px;width:1000px;height:357px;z-index:3;">
+  <form>
+    <input type="button" id="get" value="Get Videos" style="position:absolute;left:5px;top:20px;width:250px;height:60px;z-index:0;">
+    <input type="button" id="download" value="Download" style="position:absolute;left:5px;top:90px;width:250px;height:60px;z-index:1;">
+	<select id ="list" style="position:absolute;left:350px;top:20px;width:650px;height:30px;z-index:2;" onchange="changed()"></select>
+  </form>
+</div>
+<input type="text" id="video_url" style="position:absolute;left:50px;top:10px;width:2px;height:1x;line-height:1px;">
+<input type="text" id="video_title" style="position:absolute;left:60px;top:10px;width:2px;height:1x;line-height:1x;">
+<input type="text" id="url" style="position:absolute;left:18px;top:10px;width:1000px;height:30px;line-height:30px;z-index:4;" name="url" placeholder="Type youtube url to download">
+<p id="msg" style="position:absolute;left:18px;top:200px;width:998px;height:30px;line-height:30px;z-index:5;" >Paste Youtube url and then click Get Videos button</p>
+<p style="position:absolute;left:18px;top:240px;width:998px;height:30px;line-height:30px; text-align:center;z-index:5">Downloads</p>
+<div id="form1" style="position:absolute;left:18px;top:290px;width:1000px;height:220px;overflow:auto;z-index:6;">
+  <table style="position:absolute;left:0;top:0px;width:1000px; z-index:8;" id="table">
+  </table>
+</div>
+</body>
+</html>
+
+
+<script>
+  app.setMessageCallback('YTD', function(name, args) {
+	if(name == 'populate_list') {
+      var sel = document.getElementById("list");	
+	  //Remove the existing options	
+	  for (i = sel.length - 1; i >= 0; i--) {
+        sel.remove(i);
+      }
+      sel.length = 0;
+   	  {  
+	    var opt = document.createElement("option");
+	    opt.innerHTML = "Select video";
+	    opt.label = opt.innerHTML;
+	    opt.selected = "selected";
+	    sel.appendChild(opt);
+	  }
+	
+	  for(var i = 0; i < args.length; ++i) {
+	    var opt = document.createElement("option");
+	    opt.innerHTML = args[i][0] + "|" + args[i][2];
+		opt.label     = opt.innerHTML;
+	    opt.value     = args[i][1] + "&title=" + args[i][0];
+	    sel.appendChild(opt);
+	  }
+	}
+	else if(name == 'new_download') {
+	  var file = args[0];
+	  var id = args[1];
+	  var table = document.getElementById("table");
+	  var row = document.createElement("tr");
+	  
+      var col0 = document.createElement("td");
+	  col0.innerHTML = file;
+	  var col1 = document.createElement("td");
+	  col1.id = id;
+	  col1.innerHTML = "Downloaded " + 0 + "KB";
+	  var col2 = document.createElement("td");
+	  var btn=document.createElement("button");
+	  btn.id = id;
+	  btn.innerHTML = "Delete"
+	  btn.onclick=function() {
+	    app.sendMessage('YTD', [id]);
+      };
+	  col2.appendChild(btn);
+	  
+	  row.appendChild(col0);
+	  row.appendChild(col1);
+	  row.appendChild(col2);
+	  table.appendChild(row);
+	}
+	else if(name == "update_download") {
+	  var id = args[0];
+	  var bytes = args[1];
+	  var col = document.getElementById(id);
+	  col.innerHTML = "Downloaded " + bytes + "KB";
+	}
+	else if(name == "end_download") {
+	  var id = args[0];
+	  var retcode = args[1];
+	  var col = document.getElementById(id);
+	  if(retcode == 0) {
+	    col.innerHTML = "Download Completed";
+	  }
+	  else {
+	    col.innerHTML = "Download Failed";
+	  }
+	}
+    else if(name == "cancel_download") {
+      var id = args[0];
+	  var row = document.getElementById(id).parentNode.rowIndex;
+	  document.getElementById("table").deleteRow(row);
+    }	  
+  });
+  
+  function changed() { 
+      var sel = document.getElementById("list");
+	  var option = sel.options[sel.selectedIndex];
+
+	  document.getElementById("video_url").value = option.value;
+	  document.getElementById("video_title").value = option.label;
+  }
+    
+</script>
+
